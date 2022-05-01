@@ -8,7 +8,7 @@ const MODES = ['osu', 'fruits', 'mania', 'taiko']
  * @param {import("fastify").FastifyRequest} request
  * @param {import("fastify").FastifyReply} reply
  */
-async function osu(request, reply) {
+async function osuHandler(request, reply) {
   const { code, state } = request.query
 
   if (!code || !state) {
@@ -83,4 +83,4 @@ async function osu(request, reply) {
   }
 }
 
-module.exports = osu
+module.exports = osuHandler

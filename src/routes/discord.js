@@ -5,7 +5,7 @@ const fetch = require('node-fetch')
  * @param {import("fastify").FastifyRequest} request
  * @param {import("fastify").FastifyReply} reply
  */
-async function discord(request, reply) {
+async function discordHandler(request, reply) {
   const code = request.query?.code
 
   if (!code) {
@@ -60,4 +60,4 @@ async function discord(request, reply) {
   }
 }
 
-module.exports = discord
+module.exports = discordHandler
