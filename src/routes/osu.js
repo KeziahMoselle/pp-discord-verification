@@ -8,22 +8,22 @@ const MODES = ['osu', 'fruits', 'mania', 'taiko']
  * @param {import("fastify").FastifyRequest} request
  * @param {import("fastify").FastifyReply} reply
  */
-async function discord(request, reply) {
+async function osu(request, reply) {
   const { code, state } = request.query
 
   if (!code || !state) {
     return { message: 'No querystring parameter "code" or "state" provided.' }
   }
 
-  const body = {
-    'client_id': process.env.OSU_CLIENT_ID,
-    'client_secret': process.env.OSU_CLIENT_SECRET,
-    'grant_type': 'authorization_code',
-    code,
-    'redirect_uri': process.env.OSU_CALLBACK_URL,
-  }
-
   try {
+    const body = {
+      'client_id': process.env.OSU_CLIENT_ID,
+      'client_secret': process.env.OSU_CLIENT_SECRET,
+      'grant_type': 'authorization_code',
+      code,
+      'redirect_uri': process.env.OSU_CALLBACK_URL,
+    }
+
     const response = await fetch('https://osu.ppy.sh/oauth/token', {
       method: 'POST',
       body: JSON.stringify(body),
