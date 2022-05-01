@@ -9,7 +9,8 @@ async function discord(request, reply) {
   const code = request.query?.code
 
   if (!code) {
-    return { message: 'No querystring parameter "code" provided.' }
+    console.log('Redirect to Discord OAuth page.')
+    return reply.redirect(301, 'https://discord.com/api/oauth2/authorize?client_id=970385758995218524&redirect_uri=https%3A%2F%2Fverification.pippitrack.com%2F&response_type=code&scope=identify')
   }
 
   try {
