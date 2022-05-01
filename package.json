@@ -4,5 +4,24 @@
     "dotenv": "^16.0.0",
     "fastify": "^3.29.0",
     "node-fetch": "^2.6.7"
-  }
+  },
+  "name": "pp-discord-verification",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "devDependencies": {},
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KeziahMoselle/pp-discord-verification.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KeziahMoselle/pp-discord-verification/issues"
+  },
+  "homepage": "https://github.com/KeziahMoselle/pp-discord-verification#readme",
+  "description": ""
 }
