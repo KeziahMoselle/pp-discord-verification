@@ -83,4 +83,4 @@ async function osu(request, reply) {
   }
 }
 
-module.exports = discord
+module.exports = osu
