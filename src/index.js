@@ -16,7 +16,7 @@ client.login(process.env.DISCORD_BOT_TOKEN)
 
 const start = async () => {
   try {
-    await fastify.listen(process.env.PORT || 3000)
+    await fastify.listen(process.env.PORT || 3000, '0.0.0.0')
     console.log(`Server started on port ${process.env.PORT}.`)
   } catch (error) {
     fastify.log.error(error)
