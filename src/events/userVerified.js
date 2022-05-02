@@ -7,6 +7,16 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko }) {
 
   const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
   const member = await guild.members.fetch(discordId)
+  const adminChannel = await guild.channels.fetch(process.env.DICORD_ADMIN_CHANNEL_ID)
+  const username = member.nickname || member.user.username
+
+  try {
+    await member.setNickname(osu.username)
+  } catch {
+    adminChannel.send(`Cannot rename ${member} to ${osu.username}. Missing permissions (Member is owner or role is higher than me)`)
+  }
+
+  return
 
   const roles = await getRoles(guild, {
     osu,
@@ -27,7 +37,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko }) {
 
   if (removedRoles.length > 0) {
     await member.roles.remove(removedRoles)
-    console.log(`Removing roles from ${member.user.username}: ${removedRoles.map(role => role.name).join(', ')}`)
+    console.log(`Removing roles from ${username}: ${removedRoles.map(role => role.name).join(', ')}`)
   }
 
   if (!member.roles.cache.has(ROLES.verified)) {
@@ -36,9 +46,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko }) {
   }
 
   await member.roles.add(roles)
-  console.log(`Adding roles to ${member.user.username}: ${roles.map(role => role.name).join(', ')}`)
-
-  const adminChannel = await guild.channels.fetch(process.env.DICORD_ADMIN_CHANNEL_ID)
+  console.log(`Adding roles to ${username}: ${roles.map(role => role.name).join(', ')}`)
 
   let description = ''
 
