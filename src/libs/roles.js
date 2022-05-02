@@ -48,9 +48,11 @@ async function getRoles(guild, { osu, fruits, mania, taiko }) {
     getRole(guild, taiko, 'taiko'),
   ])
 
+  const verifiedRole = await guild.roles.fetch(ROLES.verified)
+
   return roles
-    .push(ROLES.verified)
     .filter(role => role)
+    .push(verifiedRole)
 }
 
 /**
