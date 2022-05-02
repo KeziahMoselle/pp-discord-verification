@@ -48,11 +48,7 @@ async function getRoles(guild, { osu, fruits, mania, taiko }) {
     getRole(guild, taiko, 'taiko'),
   ])
 
-  const verifiedRole = await guild.roles.fetch(ROLES.verified)
-
-  return roles
-    .filter(role => role)
-    .push(verifiedRole)
+  return roles.filter(role => role)
 }
 
 /**
@@ -94,5 +90,6 @@ async function allRoles(guild) {
 
 module.exports = {
   getRoles,
-  allRoles
+  allRoles,
+  ROLES
 }

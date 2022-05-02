@@ -1,6 +1,6 @@
 const { MessageEmbed } = require('discord.js')
 const client = require('../libs/client')
-const { getRoles, allRoles } = require('../libs/roles')
+const { getRoles, allRoles, ROLES } = require('../libs/roles')
 const getEmoji = require('../libs/getEmoji')
 
 async function onUserVerified({ discordId, osu, fruits, mania, taiko }) {
@@ -20,7 +20,8 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko }) {
   const removedRoles = []
 
   for (const role of rolesToRemove) {
-    if (member.roles.cache.has(role.id)) {
+    console.log(member.roles.cache.has(role?.id))
+    if (member.roles.cache.has(role?.id)) {
       removedRoles.push(role)
     }
   }
@@ -28,6 +29,11 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko }) {
   if (removedRoles.length > 0) {
     await member.roles.remove(removedRoles)
     console.log(`Removing roles from ${member.user.username}: ${removedRoles.map(role => role.name).join(', ')}`)
+  }
+
+  if (!member.roles.cache.has(ROLES.verified)) {
+    const verifiedRole = await guild.roles.fetch(ROLES.verified)
+    roles.push(verifiedRole)
   }
 
   await member.roles.add(roles)
