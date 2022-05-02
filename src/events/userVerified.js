@@ -20,7 +20,6 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko }) {
   const removedRoles = []
 
   for (const role of rolesToRemove) {
-    console.log(member.roles.cache.has(role?.id))
     if (member.roles.cache.has(role?.id)) {
       removedRoles.push(role)
     }
