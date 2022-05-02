@@ -16,8 +16,6 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko }) {
     adminChannel.send(`Cannot rename ${member} to ${osu.username}. Missing permissions (Member is owner or role is higher than me)`)
   }
 
-  return
-
   const roles = await getRoles(guild, {
     osu,
     fruits,
