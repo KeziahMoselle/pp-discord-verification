@@ -1,4 +1,5 @@
 const fetch = require('node-fetch')
+const states = require('../libs/states')
 
 /**
  *
@@ -43,13 +44,18 @@ async function discordHandler(request, reply) {
       return user
     }
 
+    // Create state
+    const state = `${new Date().getTime()}-${user.id}`
+    states.set(state, user.id)
+
+    // Redirect to osu! OAuth
     const url = new URL('https://osu.ppy.sh/oauth/authorize')
 
     url.searchParams.append('client_id', process.env.OSU_CLIENT_ID)
     url.searchParams.append('scope', 'identify')
     url.searchParams.append('response_type', 'code')
     url.searchParams.append('redirect_uri', process.env.OSU_CALLBACK_URL)
-    url.searchParams.append('state', user.id)
+    url.searchParams.append('state', state)
 
     return reply.redirect(301, url)
   } catch (error) {

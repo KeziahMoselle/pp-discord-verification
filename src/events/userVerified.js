@@ -1,6 +1,6 @@
 const { MessageEmbed } = require('discord.js')
 const client = require('../libs/client')
-const { getRoles } = require('../libs/roles')
+const { getRoles, allRoles } = require('../libs/roles')
 const getEmoji = require('../libs/getEmoji')
 
 async function onUserVerified({ discordId, osu, fruits, mania, taiko }) {
@@ -15,24 +15,42 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko }) {
     taiko,
   })
 
-  for (const role of roles) {
-    await member.roles.add(roles)
+  const rolesToRemove = await allRoles(guild)
+
+  const removedRoles = []
+
+  for (const role of rolesToRemove) {
+    if (member.roles.cache.has(role.id)) {
+      removedRoles.push(role)
+    }
   }
+
+  if (removedRoles.length > 0) {
+    await member.roles.remove(removedRoles)
+    console.log(`Removing roles from ${member.user.username}: ${removedRoles.map(role => role.name).join(', ')}`)
+  }
+
+  await member.roles.add(roles)
+  console.log(`Adding roles to ${member.user.username}: ${roles.map(role => role.name).join(', ')}`)
 
   const adminChannel = await guild.channels.fetch(process.env.DICORD_ADMIN_CHANNEL_ID)
 
   let description = ''
 
   description += `Discord tag: <@${discordId}>\n\n`
-  description += `${getEmoji('osu')} #${osu.statistics.global_rank ?? '0'} (#${Math.round(osu.statistics.pp)})\n`
-  description += `${getEmoji('fruits')} #${fruits.statistics.global_rank ?? '0'} (#${Math.round(fruits.statistics.pp)})\n`
-  description += `${getEmoji('mania')} #${mania.statistics.global_rank ?? '0'} (#${Math.round(mania.statistics.pp)})\n`
-  description += `${getEmoji('taiko')} #${taiko.statistics.global_rank ?? '0'} (#${Math.round(taiko.statistics.pp)})\n\n`
+  description += `${getEmoji('osu')} #${osu.statistics.global_rank ?? '0'}\n`
+  description += `${getEmoji('fruits')} #${fruits.statistics.global_rank ?? '0'}\n`
+  description += `${getEmoji('mania')} #${mania.statistics.global_rank ?? '0'}\n`
+  description += `${getEmoji('taiko')} #${taiko.statistics.global_rank ?? '0'}\n\n`
 
   description += `Added ${roles.length} roles: ${roles.map(role => `<@&${role.id}>`).join(', ')}`
 
+  if (removedRoles.length > 0) {
+    description += `\nRemoved ${removedRoles.length} roles: ${removedRoles.map(role => `<@&${role.id}>`).join(', ')}`
+  }
+
   const embed = new MessageEmbed()
-    .setTitle(`${osu.username} has been verified! (⭐ ${osu.playmode})`)
+    .setTitle(`${osu.username} has been ${removedRoles.length > 0 ? 're' : ''}verified! (⭐ ${osu.playmode})`)
     .setURL(`https://osu.ppy.sh/users/${osu.id}`)
     .setDescription(description)
     .addField('Playstyle', osu.playstyle.join(', '), true)

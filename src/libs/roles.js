@@ -3,6 +3,7 @@ const { get } = require('http');
 const client = require('./client')
 
 const ROLES = {
+  verified: '909555235834441758',
   osu: {
     1: '909540204719800390',
     2: '909550783987609651',
@@ -47,7 +48,9 @@ async function getRoles(guild, { osu, fruits, mania, taiko }) {
     getRole(guild, taiko, 'taiko'),
   ])
 
-  return roles.filter(role => role)
+  return roles
+    .push(ROLES.verified)
+    .filter(role => role)
 }
 
 /**
@@ -74,16 +77,20 @@ async function getRole(guild, user, mode) {
 
 /**
  * Return a list of role ids
- * @returns {Array}
+ *  @param {Guild} guild
+ *  @returns {Array}
  */
-function hasRoles() {
-  return Object.values(ROLES).reduce((acc, el) => {
+async function allRoles(guild) {
+  const rolesIds = Object.values(ROLES).reduce((acc, el) => {
     acc.push(Object.values(el))
     return acc
   }, []).flat()
+
+  const roles = await Promise.all(rolesIds.map(id => guild.roles.fetch(id)))
+  return roles
 }
 
 module.exports = {
   getRoles,
-  hasRoles
+  allRoles
 }

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@fastify/static": "^5.0.1",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
     "fastify": "^3.29.0",
@@ -8,7 +9,6 @@
   "name": "pp-discord-verification",
   "version": "1.0.0",
   "main": "src/index.js",
-  "devDependencies": {},
   "scripts": {
     "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
