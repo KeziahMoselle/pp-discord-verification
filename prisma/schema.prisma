@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model applications {
+  id         BigInt  @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  gamemode   String? @db.Text
+  experience String? @db.Text
+  skillsets  String? @db.Text
+  why        String? @db.Text
+  data       Json?
+  discord_id String? @db.Text
+  state      String? @db.Text
+}

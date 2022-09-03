@@ -1,6 +1,6 @@
 const fetch = require('node-fetch')
 const client = require('../libs/client')
-const states = require('../libs/states')
+const store = require('../store')
 
 const MODES = ['osu', 'fruits', 'mania', 'taiko']
 
@@ -61,15 +61,15 @@ async function osuHandler(request, reply) {
       taikoResponse.json(),
     ])
 
-    const discordId = states.get(state)
-    states.delete(state)
+    const userState = store.get(state)
+    store.delete(state)
 
     client.emit('userVerified', {
-      discordId,
+      ...userState,
       osu,
       fruits,
       mania,
-      taiko
+      taiko,
     })
 
     return reply.redirect(301, '/success')
