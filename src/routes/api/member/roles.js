@@ -1,4 +1,4 @@
-const client = require('../libs/client')
+const client = require('../../../libs/client')
 
 /**
  *

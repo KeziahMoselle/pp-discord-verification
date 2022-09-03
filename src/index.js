@@ -4,6 +4,7 @@ const client = require('./libs/client')
 const fastify = require('fastify')()
 const fastifyStatic = require('@fastify/static')
 const osu = require('./routes/osu')
+const apiMemberRoles = require('./routes/api/member/roles')
 const onUserVerified = require('./events/userVerified')
 const {
   EmbedBuilder,
@@ -26,6 +27,8 @@ fastify.get('/osu', osu)
 fastify.get('/success', (request, reply) => {
   return reply.sendFile('success.html')
 })
+
+fastify.get('/api/member/roles', apiMemberRoles)
 
 /**
  * DISCORD
@@ -126,6 +129,12 @@ client.on('interactionCreate', async (interaction) => {
                 .setLabel('Remove onion role')
                 .setStyle(ButtonStyle.Danger),
             );
+
+          try {
+            await member.send(`Performance Points: You now have the "Onion" role.`)
+          } catch (error) {
+            console.warn(`Could not send a DM to Discord ID: "${member.user.id}"`)
+          }
 
           await interaction.update({
             components: [row]
