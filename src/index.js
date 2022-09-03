@@ -9,7 +9,7 @@ const onUserVerified = require('./events/userVerified')
 const {
   EmbedBuilder,
   ActionRowBuilder, ButtonBuilder, ButtonStyle,
-  ModalBuilder, TextInputBuilder, TextInputStyle
+  ModalBuilder, TextInputBuilder, TextInputStyle,
 } = require('discord.js')
 const { PrismaClient } = require('@prisma/client')
 const { v4: uuid } = require('@lukeed/uuid')
@@ -108,6 +108,15 @@ client.on('interactionCreate', async (interaction) => {
         if (member.roles.cache.has(ROLES.onion)) {
           await member.roles.remove(onion)
 
+          const embed = EmbedBuilder.from(interaction.message.embeds[0])
+          const whoApprovedEmbed = new EmbedBuilder()
+            .setAuthor({
+              name: interaction.member.nickname || interaction.member?.user.username,
+              iconURL: interaction.member?.user.avatarURL()
+            })
+            .setDescription(`Removed the ${onion?.name} role from this member.\n<t:${(new Date().getTime() / 1000).toFixed(0)}:R>`)
+            .setColor('Red')
+
           const row = new ActionRowBuilder()
             .addComponents(
               new ButtonBuilder()
@@ -117,10 +126,20 @@ client.on('interactionCreate', async (interaction) => {
             );
 
           await interaction.update({
-            components: [row]
+            embeds: [embed, whoApprovedEmbed],
+            components: [row],
           })
         } else {
           await member.roles.add(onion)
+
+          const embed = EmbedBuilder.from(interaction.message.embeds[0])
+          const whoApprovedEmbed = new EmbedBuilder()
+            .setAuthor({
+              name: interaction.member.nickname || interaction.member?.user.username,
+              iconURL: interaction.member?.user.avatarURL()
+            })
+            .setDescription(`Added the ${onion?.name} role to this member.\n<t:${(new Date().getTime() / 1000).toFixed(0)}:R>`)
+            .setColor('Blue')
 
           const row = new ActionRowBuilder()
             .addComponents(
@@ -131,13 +150,14 @@ client.on('interactionCreate', async (interaction) => {
             );
 
           try {
-            await member.send(`Performance Points: You now have the "Onion" role.`)
+            await member.send(`Performance Points: You now have the "${onion?.name}" role.`)
           } catch (error) {
             console.warn(`Could not send a DM to Discord ID: "${member.user.id}"`)
           }
 
           await interaction.update({
-            components: [row]
+            embeds: [embed, whoApprovedEmbed],
+            components: [row],
           })
         }
 

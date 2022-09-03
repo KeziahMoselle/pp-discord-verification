@@ -43,19 +43,47 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets 
   await member.roles.add(roles)
   console.log(`Adding roles to ${username}: ${roles.map(role => role.name).join(', ')}`)
 
+  let renamed = ''
+
+  // Try renaming the user.
+  try {
+    await member.setNickname(osu.username)
+    renamed = `**Renamed** to ${osu.username}.`
+  } catch {
+    renamed = `**Cannot rename** ${member} to \`${osu.username}\`.\n*Reason: Missing permissions (Member is owner or role is higher than me)*`
+  }
+
+
   let description = ''
 
   description += `Discord tag: <@${discordId}>\n\n`
+
+  description += `Playstyle: ${osu.playstyle.join(', ')}\n`
+
+  description += `Skillsets:\n\`\`\`${skillsets}\`\`\`\n\n`
+
   description += `${getEmoji('osu')} #${osu.statistics.global_rank ?? '0'}\n`
   description += `${getEmoji('fruits')} #${fruits.statistics.global_rank ?? '0'}\n`
   description += `${getEmoji('mania')} #${mania.statistics.global_rank ?? '0'}\n`
   description += `${getEmoji('taiko')} #${taiko.statistics.global_rank ?? '0'}\n\n`
 
-  description += `Added ${roles.length} roles: ${roles.map(role => `<@&${role.id}>`).join(', ')}`
+  description += `**Added roles**: ${roles.map(role => `<@&${role.id}>`).join(', ')}`
 
-  if (removedRoles.length > 0) {
-    description += `\nRemoved ${removedRoles.length} roles: ${removedRoles.map(role => `<@&${role.id}>`).join(', ')}`
-  }
+  description += `\n${renamed}`
+
+  const embed = new EmbedBuilder()
+    .setAuthor({
+      name: `${osu.username} (⭐ ${osu.playmode})`,
+      iconURL: `https://s.ppy.sh/a/${osu.id}?v=${new Date().getTime()}`,
+      url: `https://osu.ppy.sh/users/${osu.id}`
+    })
+    .setTitle(`✅ ${member.nickname || member.user.username} has been ${removedRoles.length > 0 ? 're' : ''}verified!`)
+    .setURL(`https://osu.ppy.sh/users/${osu.id}`)
+    .setDescription(description)
+    .setThumbnail(member.user.avatarURL())
+    .setColor('#b70f75')
+
+  const embeds = [embed]
 
   let row
 
@@ -67,6 +95,12 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets 
           .setLabel('Remove onion role')
           .setStyle(ButtonStyle.Danger),
       );
+
+    const alreadyOnionEmbed = new EmbedBuilder()
+      .setDescription("This member already has the Onion role.")
+      .setColor('Grey')
+
+    embeds.push(alreadyOnionEmbed)
   } else {
     row = new ActionRowBuilder()
     .addComponents(
@@ -77,23 +111,6 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets 
     );
   }
 
-  const embed = new EmbedBuilder()
-    .setTitle(`${osu.username} has been ${removedRoles.length > 0 ? 're' : ''}verified! (⭐ ${osu.playmode})`)
-    .setURL(`https://osu.ppy.sh/users/${osu.id}`)
-    .setDescription(description)
-    .addFields({
-      name: 'Playstyle',
-      value: osu.playstyle.join(', '),
-      inline: true
-    }, {
-      name: 'Skillsets',
-      value: skillsets,
-      inline: false,
-    })
-    .setThumbnail(`https://s.ppy.sh/a/${osu.id}?v=${new Date().getTime()}`)
-    .setColor('#b70f75')
-
-
   await prisma.members.upsert({
     where: { discord_id: discordId || 0 },
     update: {},
@@ -103,14 +120,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets 
     }
   })
 
-  await adminChannel.send({ embeds: [embed], components: [row] })
-
-  // Try renaming the user.
-  try {
-    await member.setNickname(osu.username)
-  } catch {
-    adminChannel.send(`Cannot rename ${member} to \`${osu.username}\`. Missing permissions (Member is owner or role is higher than me)`)
-  }
+  await adminChannel.send({ embeds, components: [row] })
 }
 
 module.exports = onUserVerified
