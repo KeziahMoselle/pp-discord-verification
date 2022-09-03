@@ -3,6 +3,7 @@ const client = require('../libs/client')
 const { getRoles, allRoles, ROLES } = require('../libs/roles')
 const getEmoji = require('../libs/getEmoji')
 const { Button } = require('discord.js')
+const prisma = require('../libs/prisma')
 
 async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets }) {
   const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
@@ -92,14 +93,24 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets 
     .setThumbnail(`https://s.ppy.sh/a/${osu.id}?v=${new Date().getTime()}`)
     .setColor('#b70f75')
 
+
+  await prisma.members.upsert({
+    where: { discord_id: discordId || 0 },
+    update: {},
+    create: {
+      discord_id: String(discordId),
+      osu_id: String(osu.id),
+    }
+  })
+
+  await adminChannel.send({ embeds: [embed], components: [row] })
+
   // Try renaming the user.
   try {
     await member.setNickname(osu.username)
   } catch {
     adminChannel.send(`Cannot rename ${member} to \`${osu.username}\`. Missing permissions (Member is owner or role is higher than me)`)
   }
-
-  adminChannel.send({ embeds: [embed], components: [row] })
 }
 
 module.exports = onUserVerified

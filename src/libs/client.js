@@ -2,7 +2,7 @@ const { Client } = require('discord.js')
 const discordModals = require('discord-modals')
 
 const client = new Client({
-  intents: []
+  intents: ['GuildMembers']
 })
 
 discordModals(client)
