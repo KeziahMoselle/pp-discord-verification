@@ -93,7 +93,7 @@ client.on('userVerified', onUserVerified)
 client.on('interactionCreate', async (interaction) => {
   if (interaction.isButton()) {
     if (interaction.customId === 'verify') {
-      interaction.showModal(verifyModal)
+      await interaction.showModal(verifyModal).catch(() => {})
     }
 
     if (interaction.customId.includes('toggle-onion-to-')) {
@@ -108,10 +108,12 @@ client.on('interactionCreate', async (interaction) => {
         if (member.roles.cache.has(ROLES.onion)) {
           await member.roles.remove(onion)
 
+          console.log(`${interaction.member?.nickname || interaction.member?.user.username} removed "${onion?.name}" role from "${member.nickname || member?.user.username}"`)
+
           const embed = EmbedBuilder.from(interaction.message.embeds[0])
           const whoApprovedEmbed = new EmbedBuilder()
             .setAuthor({
-              name: interaction.member.nickname || interaction.member?.user.username,
+              name: interaction.member?.nickname || interaction.member?.user.username,
               iconURL: interaction.member?.user.avatarURL()
             })
             .setDescription(`Removed the ${onion?.name} role from this member.\n<t:${(new Date().getTime() / 1000).toFixed(0)}:R>`)
@@ -131,6 +133,8 @@ client.on('interactionCreate', async (interaction) => {
           })
         } else {
           await member.roles.add(onion)
+
+          console.log(`${interaction.member?.nickname || interaction.member?.user.username} added "${onion?.name}" role to "${member.nickname || member?.user.username}"`)
 
           const embed = EmbedBuilder.from(interaction.message.embeds[0])
           const whoApprovedEmbed = new EmbedBuilder()
@@ -176,7 +180,10 @@ client.on('interactionCreate', async (interaction) => {
       store.set(state, {
         discordId: interaction.user.id,
         skillsets,
+        created_at: new Date()
       })
+
+      console.log(`[store] added state from user ${interaction.user.username}${interaction.user.discriminator}`)
 
       const url = new URL('https://osu.ppy.sh/oauth/authorize')
 
@@ -234,3 +241,15 @@ const start = async () => {
 }
 
 start()
+
+process.on('uncaughtExceptionMonitor', (error) => {
+  if (error.message === 'Unknown interaction') {
+    return
+  }
+
+  throw error
+})
+
+process.on('unhandledRejection', (error) => {
+  console.error(error)
+})

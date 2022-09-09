@@ -16,6 +16,12 @@ async function osuHandler(request, reply) {
     return { message: 'No querystring parameter "code" or "state" provided.' }
   }
 
+  const hasState = store.has(state)
+
+  if (!hasState) {
+    return { message: 'State has expired. Please resend an application.' }
+  }
+
   try {
     const body = {
       'client_id': process.env.OSU_CLIENT_ID,
@@ -61,8 +67,9 @@ async function osuHandler(request, reply) {
       taikoResponse.json(),
     ])
 
+
     const userState = store.get(state)
-    store.delete(state)
+    console.log(store.entries())
 
     client.emit('userVerified', {
       ...userState,
@@ -78,6 +85,9 @@ async function osuHandler(request, reply) {
     return {
       message: 'An error occurred while trying to get the user data.',
     }
+  } finally {
+    store.delete(state)
+    console.log('cleared state', store.entries())
   }
 }
 

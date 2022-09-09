@@ -9,7 +9,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets 
   const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
   const member = await guild.members.fetch(discordId)
   const adminChannel = await guild.channels.fetch(process.env.DICORD_ADMIN_CHANNEL_ID)
-  const username = member.nickname || member.user.username
+  const username = member?.nickname || member?.user?.username
 
   console.log(`"${username}" sent an Onion application.`)
 
@@ -46,26 +46,34 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets 
   let renamed = ''
 
   // Try renaming the user.
-  try {
-    await member.setNickname(osu.username)
-    renamed = `**Renamed** to ${osu.username}.`
-  } catch {
-    renamed = `**Cannot rename** ${member} to \`${osu.username}\`.\n*Reason: Missing permissions (Member is owner or role is higher than me)*`
+  if (member?.nickname !== osu.username) {
+    try {
+      await member.setNickname(osu.username)
+      renamed = `**Renamed** to ${osu.username}.`
+    } catch {
+      renamed = `**Cannot rename** ${member} to \`${osu.username}\`.\n*Reason: Missing permissions (Member is owner or role is higher than me)*`
+    }
   }
 
 
   let description = ''
 
+  const playstyle =
+    osu?.playstyle?.join(', ')
+    ?? fruits?.playstyle?.join(', ')
+    ?? mania?.playstyle?.join(', ')
+    ?? taiko?.playstyle?.join(', ')
+
   description += `Discord tag: <@${discordId}>\n\n`
 
-  description += `Playstyle: ${osu.playstyle.join(', ')}\n`
+  description += `Playstyle: ${playstyle}\n`
 
   description += `Skillsets:\n\`\`\`${skillsets}\`\`\`\n\n`
 
-  description += `${getEmoji('osu')} #${osu.statistics.global_rank ?? '0'}\n`
-  description += `${getEmoji('fruits')} #${fruits.statistics.global_rank ?? '0'}\n`
-  description += `${getEmoji('mania')} #${mania.statistics.global_rank ?? '0'}\n`
-  description += `${getEmoji('taiko')} #${taiko.statistics.global_rank ?? '0'}\n\n`
+  description += `${getEmoji('osu')} #${osu?.statistics?.global_rank ?? '0'}\n`
+  description += `${getEmoji('fruits')} #${fruits?.statistics?.global_rank ?? '0'}\n`
+  description += `${getEmoji('mania')} #${mania?.statistics?.global_rank ?? '0'}\n`
+  description += `${getEmoji('taiko')} #${taiko?.statistics?.global_rank ?? '0'}\n\n`
 
   description += `**Added roles**: ${roles.map(role => `<@&${role.id}>`).join(', ')}`
 
