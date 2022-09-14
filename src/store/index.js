@@ -21,6 +21,6 @@ setInterval(() => {
     console.log(`[store] deleted invalid state: discordId: "${state.discordId}"`)
     store.delete(invalidState)
   }
-}, 5000);
+}, ONE_DAY);
 
 module.exports = store
