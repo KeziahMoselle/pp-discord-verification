@@ -61,7 +61,7 @@ client.on('ready', async () => {
           .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
         .setCustomId('verify-apply-onion')
-          .setLabel('Verify and apply to Onion')
+          .setLabel('Verify and apply for Onion')
           .setStyle(ButtonStyle.Primary),
     )
 
