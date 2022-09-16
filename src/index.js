@@ -136,7 +136,7 @@ client.on('interactionCreate', async (interaction) => {
         embeds: [embed],
         components: [row],
         ephemeral: true,
-      })
+      }).catch(() => {})
     }
 
     if (interaction.customId === 'verify-apply-onion') {
@@ -293,11 +293,7 @@ const start = async () => {
 start()
 
 process.on('uncaughtException', (error) => {
-  if (error.message === 'Unknown interaction') {
-    return
-  }
-
-  throw error
+  return
 })
 
 process.on('unhandledRejection', (error) => {
