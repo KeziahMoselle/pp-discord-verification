@@ -32,7 +32,8 @@ const ROLES = {
     3: '909550969354879068', // 3 digits
     4: '909550994952716288', // 4 digits
     5: '909551014175195147', // 5+ digits
-  }
+  },
+  map: null
 }
 
 /**
@@ -70,7 +71,7 @@ async function getRole(guild, user, mode) {
     digits = 5
   }
 
-  const role = await guild.roles.fetch(ROLES[mode][digits])
+  const role = ROLES.map.get(ROLES[mode][digits])
   return role
 }
 
@@ -85,12 +86,12 @@ async function allRoles(guild) {
     return acc
   }, []).flat()
 
-  const roles = await Promise.all(rolesIds.map(id => guild.roles.fetch(id)))
+  const roles = await Promise.all(rolesIds.map(id => ROLES.map.get(id)))
   return roles
 }
 
 module.exports = {
   getRoles,
   allRoles,
-  ROLES
+  ROLES,
 }

@@ -11,7 +11,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
   const adminChannel = await guild.channels.fetch(process.env.DICORD_ADMIN_CHANNEL_ID)
   const username = member?.nickname || member?.user?.username
 
-  console.log(`"${username}" has been verified.`)
+  console.time(`"${username}" has been verified.`)
 
   const roles = await getRoles(guild, {
     osu,
@@ -36,7 +36,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
   }
 
   if (!member.roles.cache.has(ROLES.verified)) {
-    const verifiedRole = await guild.roles.fetch(ROLES.verified)
+    const verifiedRole = await ROLES.map.get(ROLES.verified)
     roles.push(verifiedRole)
   }
 
@@ -45,16 +45,15 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
 
 
   // Try renaming the user.
-  /*
-    let renamed = ''
-    if (member?.nickname !== osu.username || member.user.username !== osu.username) {
+  let renamed = ''
+  if (member?.nickname !== osu.username || member.user.username !== osu.username) {
     try {
       await member.setNickname(osu.username)
       renamed = `**Renamed** to ${osu.username}.`
     } catch {
       renamed = `**Cannot rename** ${member} to \`${osu.username}\`.\n*Reason: Missing permissions (Member is owner or role is higher than me)*`
     }
-  } */
+  }
 
   await prisma.members.upsert({
     where: { discord_id: discordId || 0 },
@@ -64,6 +63,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
       osu_id: String(osu.id),
     }
   })
+  console.timeEnd(`"${username}" has been verified.`)
 
   if (verifyOnly) {
     let description = ''
@@ -85,7 +85,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
 
     description += `**Added roles**: ${roles.map(role => `<@&${role.id}>`).join(', ')}`
 
-    // description += `\n${renamed}`
+    description += `\n${renamed}`
 
     const embed = new EmbedBuilder()
       .setAuthor({
@@ -122,7 +122,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
 
     description += `**Added roles**: ${roles.map(role => `<@&${role.id}>`).join(', ')}`
 
-    // description += `\n${renamed}`
+    description += `\n${renamed}`
 
     const embed = new EmbedBuilder()
       .setAuthor({

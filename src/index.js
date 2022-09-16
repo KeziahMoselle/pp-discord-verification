@@ -267,10 +267,13 @@ client.on('interactionCreate', async (interaction) => {
 })
 
 client.once('ready', async () => {
-  const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
-  await guild?.roles.fetch()
-
   console.log('Connected to Discord.')
+
+  console.log('Fetching roles...')
+  const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
+  const result = await guild?.roles.fetch()
+
+  ROLES.map = result;
 })
 
 /**
