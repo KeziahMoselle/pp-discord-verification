@@ -82,11 +82,10 @@ async function osuHandler(request, reply) {
   } catch (error) {
     console.error(error)
     return {
-      message: 'An error occurred while trying to get the user data.',
+      message: 'Sorry we are being rate limited, please try again later.',
     }
   } finally {
     store.delete(state)
-    console.log('[store] cleared state', store.entries())
   }
 }
 
