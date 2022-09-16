@@ -69,7 +69,6 @@ async function osuHandler(request, reply) {
 
 
     const userState = store.get(state)
-    console.log(store.entries())
 
     client.emit('userVerified', {
       ...userState,
@@ -87,7 +86,7 @@ async function osuHandler(request, reply) {
     }
   } finally {
     store.delete(state)
-    console.log('cleared state', store.entries())
+    console.log('[store] cleared state', store.entries())
   }
 }
 
