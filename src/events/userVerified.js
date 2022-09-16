@@ -9,6 +9,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
   const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
   const member = await guild.members.fetch(discordId)
   const adminChannel = await guild.channels.fetch(process.env.DICORD_ADMIN_CHANNEL_ID)
+  const verificationsChannel = await guild.channels.fetch(process.env.DISCORD_VERIFICATIONS_CHANNEL_ID)
   const username = member?.nickname || member?.user?.username
 
   console.time(`"${username}" has been verified.`)
@@ -99,7 +100,7 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
       .setThumbnail(member.user.avatarURL())
       .setColor('Blue')
 
-    await adminChannel.send({ embeds: [embed] })
+    await verificationsChannel.send({ embeds: [embed] })
   } else {
     let description = ''
 
