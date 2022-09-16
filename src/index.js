@@ -57,13 +57,21 @@ client.on('ready', async () => {
     .addComponents(
       new ButtonBuilder()
         .setCustomId('verify')
-          .setLabel('Apply')
-          .setStyle(ButtonStyle.Success)
+          .setLabel('Verify')
+          .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId('verify-apply-onion')
+          .setLabel('Verify and apply to Onion')
+          .setStyle(ButtonStyle.Primary),
     )
 
+  let description = ''
+  description += 'Verify yourself to access the <#757615676310552598> channel!'
+  description += '\n\nAccess to specific rework channels requires the "onion" role, which is a malapropism for "opinion". These roles are handed out sporadically depending on the quality of your contributions to general pp discussions.'
+
   const embed = new EmbedBuilder()
-    .setTitle('Verifying application')
-    .setDescription('Description')
+    .setTitle('Verification')
+    .setDescription(description)
     .setColor('#b70f75')
 
   adminChannel.send({
@@ -93,7 +101,46 @@ client.on('userVerified', onUserVerified)
 client.on('interactionCreate', async (interaction) => {
   if (interaction.isButton()) {
     if (interaction.customId === 'verify') {
-      await interaction.showModal(verifyModal).catch(() => {})
+      const state = uuid()
+
+      store.set(state, {
+        discordId: interaction.user.id,
+        created_at: new Date(),
+        verifyOnly: true,
+      })
+
+      console.log(`[store] added state from user ${interaction.user.username}${interaction.user.discriminator}`)
+
+      const url = new URL('https://osu.ppy.sh/oauth/authorize')
+
+      url.searchParams.append('client_id', process.env.OSU_CLIENT_ID)
+      url.searchParams.append('scope', 'identify')
+      url.searchParams.append('response_type', 'code')
+      url.searchParams.append('redirect_uri', process.env.OSU_CALLBACK_URL)
+      url.searchParams.append('state', state)
+
+      const embed = new EmbedBuilder()
+        .setTitle('Click here to verify your osu! account!')
+        .setURL(url.toString())
+        .setColor('Blue')
+
+      const row = new ActionRowBuilder()
+        .addComponents(
+          new ButtonBuilder()
+            .setLabel('Login with osu!')
+            .setURL(url.toString())
+            .setStyle(ButtonStyle.Link),
+        )
+
+      interaction.reply({
+        embeds: [embed],
+        components: [row],
+        ephemeral: true,
+      })
+    }
+
+    if (interaction.customId === 'verify-apply-onion') {
+      interaction.showModal(verifyModal).catch(() => {})
     }
 
     if (interaction.customId.includes('toggle-onion-to-')) {
@@ -207,7 +254,7 @@ client.on('interactionCreate', async (interaction) => {
           new ButtonBuilder()
             .setLabel('Login with osu!')
             .setURL(url.toString())
-            .setStyle(ButtonStyle.Link)
+            .setStyle(ButtonStyle.Link),
         )
 
       interaction.reply({
@@ -242,7 +289,7 @@ const start = async () => {
 
 start()
 
-process.on('uncaughtExceptionMonitor', (error) => {
+process.on('uncaughtException', (error) => {
   if (error.message === 'Unknown interaction') {
     return
   }
