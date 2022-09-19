@@ -27,9 +27,7 @@ async function memberRolesHandler(request, reply) {
     return roles
   } catch (error) {
     console.error(error)
-    return {
-      message: 'An error occurred while trying to get the member roles.',
-    }
+    return []
   }
 }
 
