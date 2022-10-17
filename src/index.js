@@ -15,6 +15,7 @@ const { PrismaClient } = require('@prisma/client')
 const { v4: uuid } = require('@lukeed/uuid')
 const store = require('./store')
 const { ROLES } = require('./libs/roles')
+const prisma = require('./libs/prisma')
 
 fastify.register(fastifyStatic, {
   root: path.join(__dirname, 'public'),
@@ -150,6 +151,11 @@ client.on('interactionCreate', async (interaction) => {
         const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
         const member = await guild.members.fetch(discordId)
         const onion = await guild.roles.fetch(ROLES.onion)
+        const dbMember = await prisma.members.findUnique({
+          where: {
+            discord_id: discordId,
+          }
+        })
 
         // Remove role if already present
         if (member.roles.cache.has(ROLES.onion)) {
@@ -157,7 +163,9 @@ client.on('interactionCreate', async (interaction) => {
 
           console.log(`${interaction.member?.nickname || interaction.member?.user.username} removed "${onion?.name}" role from "${member.nickname || member?.user.username}"`)
 
+          const embeds = []
           const embed = EmbedBuilder.from(interaction.message.embeds[0])
+          embeds.push(embed)
           const whoApprovedEmbed = new EmbedBuilder()
             .setAuthor({
               name: interaction.member?.nickname || interaction.member?.user.username,
@@ -166,16 +174,38 @@ client.on('interactionCreate', async (interaction) => {
             .setDescription(`Removed the ${onion?.name} role from this member.\n<t:${(new Date().getTime() / 1000).toFixed(0)}:R>`)
             .setColor('Red')
 
+          embeds.push(whoApprovedEmbed)
+
           const row = new ActionRowBuilder()
-            .addComponents(
+
+          if (dbMember?.is_declined) {
+            row.addComponents(
+              new ButtonBuilder()
+                .setCustomId(`remove-from-deny-list-${discordId}`)
+                .setLabel('Remove from deny list')
+                .setStyle(ButtonStyle.Secondary),
+            )
+
+            const deniedEmbed = new EmbedBuilder()
+              .setDescription("This member has been denied from Onion applications.")
+              .setColor('Orange')
+
+            embeds.push(deniedEmbed)
+          } else {
+            row.addComponents(
               new ButtonBuilder()
                 .setCustomId(`toggle-onion-to-${discordId}`)
                 .setLabel('Add onion role')
                 .setStyle(ButtonStyle.Primary),
-            );
+              new ButtonBuilder()
+                .setCustomId(`decline-application-${discordId}`)
+                .setLabel('Decline application')
+                .setStyle(ButtonStyle.Secondary),
+            )
+          }
 
           await interaction.update({
-            embeds: [embed, whoApprovedEmbed],
+            embeds,
             components: [row],
           })
         } else {
@@ -200,6 +230,21 @@ client.on('interactionCreate', async (interaction) => {
                 .setStyle(ButtonStyle.Danger),
             );
 
+          if (dbMember?.is_declined) {
+            row.addComponents(
+              new ButtonBuilder()
+                .setCustomId(`remove-from-deny-list-${discordId}`)
+                .setLabel('Remove from deny list')
+                .setStyle(ButtonStyle.Secondary),
+            )
+
+            const deniedEmbed = new EmbedBuilder()
+              .setDescription("This member has been denied from Onion applications.")
+              .setColor('Orange')
+
+            embeds.push(deniedEmbed)
+          }
+
           try {
             await member.send(`Performance Points: You now have the "${onion?.name}" role.`)
           } catch (error) {
@@ -211,6 +256,111 @@ client.on('interactionCreate', async (interaction) => {
             components: [row],
           })
         }
+
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    if (interaction.customId.includes('decline-application')) {
+      const discordId = interaction.customId.split('-')[2]
+
+      try {
+        const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
+        const member = await guild.members.fetch(discordId)
+
+        await prisma.members.update({
+          where: {
+            discord_id: discordId,
+          },
+          data: {
+            is_declined: true,
+          }
+        })
+
+        console.log(`${interaction.member?.nickname || interaction.member?.user.username} denied application from "${member.nickname || member?.user.username}"`)
+
+        const embed = EmbedBuilder.from(interaction.message.embeds[0])
+        const whoDeclinedEmbed = new EmbedBuilder()
+          .setAuthor({
+            name: interaction.member?.nickname || interaction.member?.user.username,
+            iconURL: interaction.member?.user.avatarURL()
+          })
+          .setDescription(`Declined application.\n<t:${(new Date().getTime() / 1000).toFixed(0)}:R>`)
+          .setColor('Orange')
+
+        const row = new ActionRowBuilder()
+          .addComponents(
+            new ButtonBuilder()
+              .setCustomId(`remove-from-deny-list-${discordId}`)
+              .setLabel('Remove from deny list')
+              .setStyle(ButtonStyle.Secondary),
+          );
+
+        await interaction.update({
+          embeds: [embed, whoDeclinedEmbed],
+          components: [row],
+        })
+
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    if (interaction.customId.includes('remove-from-deny-list')) {
+      const discordId = interaction.customId.split('-')[4]
+
+      try {
+        const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
+        const member = await guild.members.fetch(discordId)
+        const onion = await guild.roles.fetch(ROLES.onion)
+
+        await prisma.members.update({
+          where: {
+            discord_id: discordId,
+          },
+          data: {
+            is_declined: false,
+          }
+        })
+
+        console.log(`${interaction.member?.nickname || interaction.member?.user.username} removed "${member.nickname || member?.user.username}" from deny list.`)
+
+        const embed = EmbedBuilder.from(interaction.message.embeds[0])
+        const whoDeclinedEmbed = new EmbedBuilder()
+          .setAuthor({
+            name: interaction.member?.nickname || interaction.member?.user.username,
+            iconURL: interaction.member?.user.avatarURL()
+          })
+          .setDescription(`Removed from deny list.\n<t:${(new Date().getTime() / 1000).toFixed(0)}:R>`)
+          .setColor('Orange')
+
+        const row = new ActionRowBuilder()
+
+        if (member.roles.cache.has(ROLES.onion)) {
+          row.addComponents(
+            new ButtonBuilder()
+              .setCustomId(`toggle-onion-to-${discordId}`)
+              .setLabel('Remove onion role')
+              .setStyle(ButtonStyle.Danger),
+          )
+        } else {
+          row.addComponents(
+            new ButtonBuilder()
+              .setCustomId(`toggle-onion-to-${discordId}`)
+              .setLabel('Add onion role')
+              .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+              .setCustomId(`decline-application-${discordId}`)
+              .setLabel('Decline application')
+              .setStyle(ButtonStyle.Secondary),
+          )
+        }
+
+        await interaction.update({
+          embeds: [embed, whoDeclinedEmbed],
+          components: [row],
+        })
 
       } catch (error) {
         console.error(error)
@@ -266,14 +416,66 @@ client.on('interactionCreate', async (interaction) => {
   }
 })
 
+client.on('messageReactionAdd', async (reaction, user) => {
+  if (reaction.partial) {
+    try {
+      await reaction.fetch()
+    } catch (error) {
+      console.error(error)
+      return;
+    }
+  }
+
+  if (reaction.emoji.name === '❌' && reaction.message.author?.id === client.user?.id) {
+    const discordId = reaction.message.components[0].components.reduce((acc, component) => {
+      if (component.customId?.includes('toggle-onion-to')) {
+        acc = component.customId.split('-')[3]
+        return acc
+      }
+
+      if (component.customId?.includes('remove-from-deny-list')) {
+        acc = component.customId.split('-')[4]
+        return acc
+      }
+
+      if (component.customId?.includes('decline-application')) {
+        acc = component.customId.split('-')[2]
+        return acc
+      }
+    }, null)
+
+    if (discordId) {
+      try {
+        await prisma.members.update({
+          where: {
+            discord_id: discordId,
+          },
+          data: {
+            is_declined: true,
+          }
+        })
+
+        console.log(`${user.username} denied application from "${discordId}"`)
+        reaction.message.react('🚫')
+      } catch (error) {
+        console.error(error)
+      }
+    }
+  }
+})
+
 client.once('ready', async () => {
   console.log('Connected to Discord.')
 
   console.log('Fetching roles...')
-  const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
-  const result = await guild?.roles.fetch()
+  try {
+    const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
+    const result = await guild?.roles.fetch()
 
-  ROLES.map = result;
+    ROLES.map = result;
+  } catch (error) {
+    throw new Error(error)
+  }
 })
 
 /**
@@ -293,7 +495,7 @@ const start = async () => {
 start()
 
 process.on('uncaughtException', (error) => {
-  return
+  console.error(error)
 })
 
 process.on('unhandledRejection', (error) => {

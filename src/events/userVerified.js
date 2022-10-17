@@ -102,6 +102,12 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
 
     await verificationsChannel.send({ embeds: [embed] })
   } else {
+    const dbMember = await prisma.members.findUnique({
+      where: {
+        discord_id: discordId,
+      }
+    })
+
     let description = ''
 
     const playstyle =
@@ -139,10 +145,10 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
 
     const embeds = [embed]
 
-    let row
+    let row = new ActionRowBuilder()
 
     if (member.roles.cache.has(ROLES.onion)) {
-      row = new ActionRowBuilder()
+      row
         .addComponents(
           new ButtonBuilder()
             .setCustomId(`toggle-onion-to-${discordId}`)
@@ -156,14 +162,37 @@ async function onUserVerified({ discordId, osu, fruits, mania, taiko, skillsets,
 
       embeds.push(alreadyOnionEmbed)
     } else {
-      row = new ActionRowBuilder()
-      .addComponents(
-        new ButtonBuilder()
-          .setCustomId(`toggle-onion-to-${discordId}`)
-          .setLabel('Add onion role')
-          .setStyle(ButtonStyle.Primary),
-      );
+      row
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(`toggle-onion-to-${discordId}`)
+            .setLabel('Add onion role')
+            .setStyle(ButtonStyle.Primary),
+        );
     }
+
+    if (dbMember?.is_declined) {
+      const deniedEmbed = new EmbedBuilder()
+        .setDescription("This member has been denied from Onion applications.")
+        .setColor('Orange')
+
+      embeds.push(deniedEmbed)
+
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`remove-from-deny-list-${discordId}`)
+          .setLabel('Remove from deny list')
+          .setStyle(ButtonStyle.Secondary),
+      )
+    } else {
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`decline-application-${discordId}`)
+          .setLabel('Decline application')
+          .setStyle(ButtonStyle.Secondary),
+      )
+    }
+
 
     await adminChannel.send({ embeds, components: [row] })
   }

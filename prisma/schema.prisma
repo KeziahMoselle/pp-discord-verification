@@ -8,7 +8,8 @@ datasource db {
 }
 
 model members {
-  id         Int     @id @default(autoincrement())
-  osu_id     String? @unique
-  discord_id String? @unique
+  id          Int      @id @default(autoincrement())
+  osu_id      String?  @unique
+  discord_id  String?  @unique
+  is_declined Boolean? @default(false)
 }
