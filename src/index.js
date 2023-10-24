@@ -67,7 +67,7 @@ client.on('ready', async () => {
     )
 
   let description = ''
-  description += 'Verify yourself to access the <#757615676310552598> channel!'
+  description += 'Verify yourself to access the server!'
   description += '\n\nAccess to specific rework channels requires the "onion" role, which is a malapropism for "opinion". These roles are handed out sporadically depending on the quality of your contributions to general pp discussions.'
 
   const embed = new EmbedBuilder()
