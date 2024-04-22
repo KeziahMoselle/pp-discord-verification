@@ -18,7 +18,7 @@
     "node-fetch": "^2.6.7"
   },
   "engines": {
-    "node": "16.11"
+    "node": "^16.11"
   },
   "repository": {
     "type": "git",

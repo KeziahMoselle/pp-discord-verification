@@ -138,26 +138,27 @@ client.on('interactionCreate', async (interaction) => {
         embeds: [embed],
         components: [row],
         ephemeral: true,
-      }).catch(() => {})
+      }).catch(console.error)
     }
 
     if (interaction.customId === 'verify-apply-onion') {
-      interaction.showModal(verifyModal).catch(() => {})
+      interaction.showModal(verifyModal).catch(console.error)
     }
 
     if (interaction.customId.includes('toggle-onion-to-')) {
-      await interaction?.deferUpdate();
       const discordId = interaction.customId.split('-')[3]
 
       try {
         const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
-        const member = await guild.members.fetch(discordId)
-        const onion = await guild.roles.fetch(ROLES.onion)
-        const dbMember = await prisma.members.findUnique({
-          where: {
-            discord_id: discordId,
-          }
-        })
+        const [ member, onion, dbMember ] = await Promise.all([
+          await guild.members.fetch(discordId),
+          await guild.roles.fetch(ROLES.onion),
+          await prisma.members.findUnique({
+            where: {
+              discord_id: discordId,
+            }
+          })
+        ])
 
         // Remove role if already present
         if (member.roles.cache.has(ROLES.onion)) {
@@ -258,7 +259,6 @@ client.on('interactionCreate', async (interaction) => {
             components: [row],
           })
         }
-
       } catch (error) {
         console.error(error)
       }
