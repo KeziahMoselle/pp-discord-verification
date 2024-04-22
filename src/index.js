@@ -146,7 +146,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.customId.includes('toggle-onion-to-')) {
-      await interaction?.deferReply({ ephemeral: true });
+      await interaction?.deferUpdate();
       const discordId = interaction.customId.split('-')[3]
 
       try {
@@ -265,7 +265,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.customId.includes('decline-application')) {
-      await interaction?.deferReply({ ephemeral: true });
+      await interaction?.deferUpdate();
       const discordId = interaction.customId.split('-')[2]
 
       try {
