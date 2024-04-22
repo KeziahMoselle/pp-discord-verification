@@ -135,7 +135,7 @@ client.on('interactionCreate', async (interaction) => {
             .setStyle(ButtonStyle.Link),
         )
 
-      interaction.reply({
+      interaction.editReply({
         embeds: [embed],
         components: [row],
         ephemeral: true,
@@ -409,7 +409,7 @@ client.on('interactionCreate', async (interaction) => {
             .setStyle(ButtonStyle.Link),
         )
 
-      interaction.reply({
+      interaction.editReply({
         embeds: [embed],
         components: [row],
         ephemeral: true,
