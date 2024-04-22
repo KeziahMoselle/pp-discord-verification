@@ -100,10 +100,9 @@ verifyModal.addComponents(skillsetsRow)
 client.on('userVerified', onUserVerified)
 
 client.on('interactionCreate', async (interaction) => {
-  await interaction?.deferReply({ ephemeral: true });
-
   if (interaction.isButton()) {
     if (interaction.customId === 'verify') {
+      await interaction?.deferReply({ ephemeral: true });
       const state = uuid()
 
       store.set(state, {
@@ -147,6 +146,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.customId.includes('toggle-onion-to-')) {
+      await interaction?.deferReply({ ephemeral: true });
       const discordId = interaction.customId.split('-')[3]
 
       try {
@@ -265,6 +265,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.customId.includes('decline-application')) {
+      await interaction?.deferReply({ ephemeral: true });
       const discordId = interaction.customId.split('-')[2]
 
       try {
@@ -310,6 +311,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.customId.includes('remove-from-deny-list')) {
+      await interaction?.deferUpdate();
       const discordId = interaction.customId.split('-')[4]
 
       try {
@@ -372,6 +374,7 @@ client.on('interactionCreate', async (interaction) => {
 
   if (interaction.isModalSubmit()) {
     if (interaction.customId === 'verify-modal') {
+      await interaction?.deferReply({ ephemeral: true });
       const skillsets = interaction.fields.getTextInputValue('verify-skillsets')
 
       const state = uuid()
