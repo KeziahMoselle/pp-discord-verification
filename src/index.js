@@ -100,6 +100,8 @@ verifyModal.addComponents(skillsetsRow)
 client.on('userVerified', onUserVerified)
 
 client.on('interactionCreate', async (interaction) => {
+  await interaction?.deferReply();
+
   if (interaction.isButton()) {
     if (interaction.customId === 'verify') {
       const state = uuid()
