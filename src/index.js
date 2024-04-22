@@ -265,7 +265,6 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.customId.includes('decline-application')) {
-      await interaction?.deferUpdate();
       const discordId = interaction.customId.split('-')[2]
 
       try {
@@ -311,13 +310,14 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.customId.includes('remove-from-deny-list')) {
-      await interaction?.deferUpdate();
       const discordId = interaction.customId.split('-')[4]
 
       try {
         const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID)
-        const member = await guild.members.fetch(discordId)
-        const onion = await guild.roles.fetch(ROLES.onion)
+        const [member, onion] = await Promise.all([
+          guild.members.fetch(discordId),
+          guild.roles.fetch(ROLES.onion)
+        ])
 
         await prisma.members.update({
           where: {
