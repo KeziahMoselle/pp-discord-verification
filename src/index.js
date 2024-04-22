@@ -100,7 +100,7 @@ verifyModal.addComponents(skillsetsRow)
 client.on('userVerified', onUserVerified)
 
 client.on('interactionCreate', async (interaction) => {
-  await interaction?.deferReply();
+  await interaction?.deferReply({ ephemeral: true });
 
   if (interaction.isButton()) {
     if (interaction.customId === 'verify') {
